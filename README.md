@@ -1,4 +1,40 @@
 # RAMDISK-XL
+for Commodore64 - RAMDISK XL (Extended)
+
+RAM-Disk XL is a machine-language utility for the Commodore 64 that turns the "hidden" RAM underneath the ROMs into a small virtual disk. It allows you to save and recall in a few moments:
+- **BASIC** programs;
+- complete **screens** (characters and color);
+- any **memory areas**;
+- **assembly programs**, with their relative entry point.
+
+Commands are issued from the BASIC prompt, preceded by the `@` character (a "wedge"): for example `@P "SCREEN1"`.
+
+The program resides in `$C000-$CFFF`. The data resides in the RAM located under the BASIC ROM, under the I/O area, and under the KERNAL ROM, therefore **they do not take anything away from the 38,911 bytes of BASIC**.
+
+## Technical Characteristics
+| Item                | Value                                              |
+|---------------------|----------------------------------------------------|
+| Capacity            | 79 blocks of 256 bytes (20,224 bytes)              |
+| Dir entries         | 10 (indices from 0 to 9)                           |
+| Name Lenght         | up to 15 characters                                |
+| Blocks 0-31         | RAM `$A000-$BFFF` (under BASIC ROM)                |
+| Blocks 32-78        | RAM `$D000-$FEFF` (under I/O and KERNAL)           |
+| Unused              | page `$FF00-$FFFF` (contains hardware vectors)     |
+| Resident program    | `$C000-$CF2F` (tables include)                     |
+| User area (`@G`)    | `$CF30-$CFFF` (208 bytes)                          |
+| Disk device         | 8 (fisso nel codice)                               |
+|---------------------|----------------------------------------------------|
+
+Copyright (c)2026 by KymyA
+License and Terms of Use
+This source code for the Commodore 64 is distributed for educational, study, and personal entertainment purposes.
+You are permitted to download, modify, and distribute the code provided that:
+Original attribution to the author is preserved.
+Any significant modifications are reported to the author (e.g., via Pull Request on GitHub).
+The code, its components, or compiled binaries are NOT used in any way for commercial purposes or sale without prior written authorization.
+
+
+# RAMDISK-XL
 per Commodore64 - RAMDISK XL (Extended)
 
 RAMDisk XL è un’utility in linguaggio macchina per il Commodore 64 che trasforma la RAM «nascosta» sotto le ROM in un piccolo disco virtuale. Permette di salvare e richiamare in pochi istanti:
@@ -12,7 +48,7 @@ I comandi si danno dal prompt del BASIC, preceduti dal carattere `@` (una «wedg
 
 Il programma risiede in `$C000-$CFFF`. I dati stanno nella RAM che si trova sotto la ROM del BASIC, sotto l’area I/O e sotto la ROM del KERNAL, quindi **non sottraggono nulla ai 38911 byte del BASIC**.
 
-## 2. Caratteristiche tecniche
+## Caratteristiche tecniche
 
 | Voce                | Valore                                             |
 |---------------------|----------------------------------------------------|
@@ -25,11 +61,8 @@ Il programma risiede in `$C000-$CFFF`. I dati stanno nella RAM che si trova sott
 | Programma residente | `$C000-$CF2F` (tabelle comprese)                   |
 | Area utente (`@G`)  | `$CF30-$CFFF` (208 byte)                           |
 | Dispositivo disco   | 8 (fisso nel codice)                               |
-|---------------------|----------------------------------------------------|
-
 
 Copyright (c)2026 by KymyA
-
 Questo codice sorgente per Commodore 64 è distribuito per scopi didattici, di studio e di intrattenimento personale.
 
 È permesso scaricare, modificare e distribuire il codice a condizione che:
