@@ -22,7 +22,7 @@ The program resides in `$C000-$CFFF`. The data resides in the RAM located under 
 | Unused              | page `$FF00-$FFFF` (contains hardware vectors)     |
 | Resident program    | `$C000-$CF2F` (tables include)                     |
 | User area (`@G`)    | `$CF30-$CFFF` (208 bytes)                          |
-| Disk device         | 8 (fisso nel codice)                               |
+| Disk device         | 8 (hardcoded)                                      |
 |---------------------|----------------------------------------------------|
 
 Copyright (c)2026 by KymyA
@@ -64,6 +64,7 @@ Il programma risiede in `$C000-$CFFF`. I dati stanno nella RAM che si trova sott
 | Dispositivo disco   | 8 (fisso nel codice)                               |
 
 Copyright (c)2026 by KymyA
+
 Questo codice sorgente per Commodore 64 è distribuito per scopi didattici, di studio e di intrattenimento personale.
 
 È permesso scaricare, modificare e distribuire il codice a condizione che:
