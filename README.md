@@ -26,6 +26,7 @@ The program resides in `$C000-$CFFF`. The data resides in the RAM located under 
 |---------------------|----------------------------------------------------|
 
 Copyright (c)2026 by KymyA
+
 License and Terms of Use
 This source code for the Commodore 64 is distributed for educational, study, and personal entertainment purposes.
 You are permitted to download, modify, and distribute the code provided that:
