@@ -6,3 +6,7 @@ Questo codice sorgente per Commodore 64 è distribuito per scopi didattici, di s
 1. Venga mantenuta l'attribuzione originale all'autore.
 2. Eventuali modifiche significative vengano segnalate all'autore (es. tramite Pull Request su GitHub).
 3. Il codice, le sue parti o i binari compilati NON vengano usati in alcun modo per scopi commerciali o di vendita senza autorizzazione scritta.
+
+Copyright (c)2026 by KymyA 
+
+This source code for the Commodore 64 is distributed for educational, study, and personal entertainment purposes. You are permitted to download, modify, and distribute the code provided that: Original attribution to the author is preserved. Any significant modifications are reported to the author (e.g., via Pull Request on GitHub). The code, its components, or compiled binaries are NOT used in any way for commercial purposes or sale without prior written authorization.
