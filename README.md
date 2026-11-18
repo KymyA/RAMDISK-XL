@@ -11,7 +11,7 @@ Commands are issued from the BASIC prompt, preceded by the `@` character (a "wed
 
 The program resides in `$C000-$CFFF`. The data resides in the RAM located under the BASIC ROM, under the I/O area, and under the KERNAL ROM, therefore **they do not take anything away from the 38,911 bytes of BASIC**.
 
-## Technical Characteristics
+## Technical Characteristics (v0.1)
 | Item                | Value                                              |
 |---------------------|----------------------------------------------------|
 | Capacity            | 79 blocks of 256 bytes (20,224 bytes)              |
@@ -24,6 +24,11 @@ The program resides in `$C000-$CFFF`. The data resides in the RAM located under 
 | User area (`@G`)    | `$CF30-$CFFF` (208 bytes)                          |
 | Disk device         | 8 (hardcoded)                                      |
 |---------------------|----------------------------------------------------|
+
+New version ready (v0.2)
+- bugs fixed
+- user ASM increased from 208 to 384 (accessible via @G)
+- variables can now be used with commands (e.g., A=1024:B=A+999:C$="TEST":@U A,B,C$)
 
 Copyright (c)2026 by KymyA
 
@@ -49,7 +54,7 @@ I comandi si danno dal prompt del BASIC, preceduti dal carattere `@` (una «wedg
 
 Il programma risiede in `$C000-$CFFF`. I dati stanno nella RAM che si trova sotto la ROM del BASIC, sotto l’area I/O e sotto la ROM del KERNAL, quindi **non sottraggono nulla ai 38911 byte del BASIC**.
 
-## Caratteristiche tecniche
+## Caratteristiche tecniche (v0.1)
 
 | Voce                | Valore                                             |
 |---------------------|----------------------------------------------------|
@@ -63,6 +68,12 @@ Il programma risiede in `$C000-$CFFF`. I dati stanno nella RAM che si trova sott
 | Area utente (`@G`)  | `$CF30-$CFFF` (208 byte)                           |
 | Dispositivo disco   | 8 (fisso nel codice)                               |
 
+Pronta nuova versione (v0.2):
+- bug corretti
+- ASM utente passato da 208 a 384 (richiamabile con @G)
+- si possono usare le variabili con i comandi (es. A=1024:B=A+999:C$="TEST":@U A,B,C$)
+
+  
 Copyright (c)2026 by KymyA
 
 Questo codice sorgente per Commodore 64 è distribuito per scopi didattici, di studio e di intrattenimento personale.
