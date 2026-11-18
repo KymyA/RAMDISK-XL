@@ -1,5 +1,5 @@
 ; ============================================================================
-; RAM DISK XL - Commodore 64
+; RAM DISK XL - Commodore 64 - v0.2 
 ; by Kymya - Versione Unificata per C64Studio
 ; ============================================================================
 
@@ -23,7 +23,7 @@ SYNTAX_MANAGER      = $AF08
 ERR_ILLEGAL_QTY     = $B248          ; LDX #$0E ; JMP $A437 (gia' nella ROM)
 ERR_ILLEGAL_DIRECT  = $B3AB          ; LDX #$15 ; JMP $A437 (gia' nella ROM)
 ERR_OUT_OF_MEMORY   = $A435          ; LDX #$10 ; JMP $A437 (gia' nella ROM)
-USER_AREA          = $CF30          ; area utente (@G): da qui a $CFFF, inizialmente solo un RTS
+USER_AREA          = $CE80          ; area utente (@G): da qui a $CFFF, inizialmente solo un RTS
 PLOT                = $FFF0
 SETNAM              = $FFBD
 SETLFS              = $FFBA
@@ -408,68 +408,15 @@ hex_byte:
 hex_byte_end:
     RTS
 
-; --- Parsing decimale (0-65535), usato quando il primo carattere non e'
-;     '$'. work_zone+9/10 = accumulatore, work_zone+11/12 = scratch. ---
+; --- Numero decimale: qualsiasi espressione numerica del BASIC (costanti,
+;     variabili, calcoli). I numeri decimali vanno separati da virgole: il
+;     BASIC ignora gli spazi dentro i numeri ("1024 2023" = 10242023). ---
 get_hex_decimal:
-    LDX  #0
-    STX  work_zone+9
-    STX  work_zone+10
-ghd_loop:
-    CMP  #$30
-    BCC  ghd_done
-    CMP  #$3A
-    BCS  ghd_done
-    PHA
-    ASL  work_zone+9
-    ROL  work_zone+10        ; *2
-    LDA  work_zone+9
-    STA  work_zone+11
-    LDA  work_zone+10
-    STA  work_zone+12        ; scratch = *2
-    ASL  work_zone+9
-    ROL  work_zone+10        ; *4
-    ASL  work_zone+9
-    ROL  work_zone+10        ; *8
-    CLC
-    LDA  work_zone+9
-    ADC  work_zone+11
-    STA  work_zone+9
-    LDA  work_zone+10
-    ADC  work_zone+12
-    STA  work_zone+10        ; *8 + *2 = *10
-    PLA
-    SEC
-    SBC  #$30
-    CLC
-    ADC  work_zone+9
-    STA  work_zone+9
-    LDA  #0
-    ADC  work_zone+10
-    STA  work_zone+10
-    ; avanza di UN carattere senza il salto automatico degli spazi di
-    ; CHRGET (altrimenti "1024 1280" verrebbe letto come un unico numero,
-    ; saltando lo spazio di separazione)
-    INC  $7A
-    BNE  ghd_noinc
-    INC  $7B
-ghd_noinc:
-    LDY  #0
-    LDA  ($7A), Y
-    JMP  ghd_loop
-ghd_done:
-ghd_skip_trailing_space:
-    CMP  #$20
-    BNE  ghd_finish
-    INC  $7A
-    BNE  ghd_skip_ni
-    INC  $7B
-ghd_skip_ni:
-    LDY  #0
-    LDA  ($7A), Y
-    JMP  ghd_skip_trailing_space
-ghd_finish:
-    LDX  work_zone+9
-    LDY  work_zone+10
+    JSR  $AD8A               ; FRMNUM: espressione -> FAC1 (?TYPE MISMATCH se stringa)
+    JSR  $B7F7               ; GETADR: FAC1 -> $14/$15 (0-65535, altrimenti ILLEGAL QUANTITY)
+    LDX  $14
+    LDY  $15
+    JSR  $0079               ; CHRGOT: A = carattere dopo l'espressione
     CLC
     RTS
 
@@ -1097,12 +1044,38 @@ SaveCommon:
 ;           di dispatch, o dall'ultima CHRGET di get_hex_param)
 ; ----------------------------------------------------------------------------
 parse_optional_name:
-    CMP  #$00
+    CMP  #$2C                ; virgola separatrice davanti al nome
+    BNE  pon_nocomma
+    JSR  CHRGET
+pon_nocomma:
+    CMP  #$00                ; nessun nome -> nome di default
     BEQ  pon_default
-    CMP  #$22
-    BEQ  pon_quoted
-    JMP  pon_parse
-    
+    CMP  #$3A                ; ':' = fine istruzione
+    BEQ  pon_default
+    JSR  $AD9E               ; FRMEVL: espressione stringa ("nome", A$, A$+"1"...)
+
+; NAME_FROM_FAC - risultato stringa gia' valutato: ne copia al massimo 15
+;                 caratteri (terminati da 0) in DESCRIPTOR_BUFFER+1.
+name_from_fac:
+    JSR  $B6A3               ; richiede una stringa (?TYPE MISMATCH): A=lunghezza, X/Y=indirizzo
+    STX  Page0_C
+    STY  Page0_D
+    STA  Page0_A             ; lunghezza (su questo percorso il nome di default non serve)
+    LDY  #0
+nff_loop:
+    CPY  #15
+    BCS  nff_end
+    CPY  Page0_A
+    BCS  nff_end
+    LDA  (Page0_C), Y
+    STA  DESCRIPTOR_BUFFER+1, Y
+    INY
+    BNE  nff_loop
+nff_end:
+    LDA  #0
+    STA  DESCRIPTOR_BUFFER+1, Y
+    RTS
+
 pon_default:
     LDY  #0
 pon_defname:
@@ -1112,42 +1085,6 @@ pon_defname:
     INY
     JMP  pon_defname
 pon_defname_end:
-    LDA  #0
-    STA  DESCRIPTOR_BUFFER+1, Y
-    RTS
-    
-pon_quoted:
-    LDY  #0
-pon_qname:
-    JSR  CHRGET
-    CMP  #$22
-    BEQ  pon_qname_done
-    CMP  #$00
-    BEQ  pon_qname_done
-    STA  DESCRIPTOR_BUFFER+1, Y
-    INY
-    CPY  #15
-    BCC  pon_qname
-pon_qname_done:
-    LDA  #0
-    STA  DESCRIPTOR_BUFFER+1, Y
-    RTS
-    
-pon_parse:
-    LDY  #0
-pon_pname:
-    LDA  ($7A), Y
-    CMP  #$20
-    BEQ  pon_pname_done
-    CMP  #$00
-    BEQ  pon_pname_done
-    CMP  #$2C
-    BEQ  pon_pname_done
-    STA  DESCRIPTOR_BUFFER+1, Y
-    INY
-    CPY  #15
-    BCC  pon_pname
-pon_pname_done:
     LDA  #0
     STA  DESCRIPTOR_BUFFER+1, Y
     RTS
@@ -1553,68 +1490,31 @@ LOADFILE:
                               ; sua JMP $0073 chiama gia' CHRGET). Richiamare
                               ; CHRGET di nuovo qui salterebbe il primo
                               ; carattere del parametro (bug di "@L 0"/"@L").
-loadfile_parse_name:
-    JSR  CHRGET
 loadfile_check_char:
-    CMP  #$00
+    CMP  #$2C                ; virgola separatrice (es. @R indirizzo,"nome")
+    BNE  lcc_nocomma
+    JSR  CHRGET
+lcc_nocomma:
+    CMP  #$00                ; nessun parametro -> voce 0
     BEQ  loadfile_first
-    CMP  #$22
-    BEQ  loadfile_quoted
-    CMP  #$20
-    BEQ  loadfile_parse_name
-    CMP  #$30
-    BCC  loadfile_name
     CMP  #$3A
-    BCC  loadfile_index
-    JMP  loadfile_name
-    
+    BEQ  loadfile_first
+    JSR  $AD9E               ; FRMEVL: indice (0, I, I+1...) oppure nome ("X", N$...)
+    BIT  $0D                 ; tipo del risultato: bit 7 = stringa
+    BMI  loadfile_str
+    JSR  $B7F7               ; numerico: indice -> $14/$15
+    LDX  $14
+    LDA  $15
+    BNE  loadfile_bad_idx
+    CPX  #MAX_ENTRY
+    BCC  loadfile_by_index
+loadfile_bad_idx:
+    JMP  ERR_ILLEGAL_QTY
 loadfile_first:
     LDX  #0
     JMP  loadfile_by_index
-    
-loadfile_index:
-    SEC
-    SBC  #$30
-    TAX
-    CPX  #MAX_ENTRY
-    BMI  loadfile_by_index
-    JMP  ERR_ILLEGAL_QTY                ; ILLEGAL QUANTITY
-    
-loadfile_quoted:
-    LDY  #0
-loadfile_qname:
-    JSR  CHRGET
-    CMP  #$22
-    BEQ  loadfile_qname_done
-    CMP  #$00
-    BEQ  loadfile_qname_done
-    STA  DESCRIPTOR_BUFFER+1, Y
-    INY
-    CPY  #15
-    BNE  loadfile_qname
-loadfile_qname_done:
-    LDA  #0
-    STA  DESCRIPTOR_BUFFER+1, Y
-    JMP  loadfile_find_name
-    
-loadfile_name:
-    LDY  #0
-loadfile_pname:
-    LDA  ($7A), Y
-    CMP  #$20
-    BEQ  loadfile_pname_done
-    CMP  #$00
-    BEQ  loadfile_pname_done
-    CMP  #$2C
-    BEQ  loadfile_pname_done
-    STA  DESCRIPTOR_BUFFER+1, Y
-    INY
-    CPY  #15
-    BNE  loadfile_pname
-loadfile_pname_done:
-    LDA  #0
-    STA  DESCRIPTOR_BUFFER+1, Y
-    
+loadfile_str:
+    JSR  name_from_fac
 loadfile_find_name:
     JSR  find_name
     BCS  loadfile_by_index_noidx
